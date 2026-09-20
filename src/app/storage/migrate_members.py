@@ -20,7 +20,7 @@ from app.storage.files import FileStore, StorageError
 def _rewrite_bill(raw: dict, mapping: dict[str, int], book_id: int) -> dict:
     rewritten = dict(raw)
     if rewritten.get("bookId") != book_id:
-        raise ValueError(f"Bill {rewritten.get('id')} references another book")
+        raise ValueError(f"账单 {rewritten.get('id')} 引用了其他账本")
     try:
         rewritten["participants"] = [mapping[str(value)] for value in raw.get("participants", [])]
         if raw.get("payerId") is not None:
@@ -31,19 +31,19 @@ def _rewrite_bill(raw: dict, mapping: dict[str, int], book_id: int) -> dict:
                 for member_id, weight in raw["weights"].items()
             }
     except KeyError as exc:
-        raise ValueError(f"Bill {rewritten.get('id')} references a missing member") from exc
+        raise ValueError(f"账单 {rewritten.get('id')} 引用了不存在的成员") from exc
     return rewritten
 
 
 def migrate_member_storage(data_dir: Path) -> dict:
     root = data_dir.resolve()
     if not root.is_dir():
-        raise ValueError("Data directory does not exist")
+        raise ValueError("数据目录不存在")
     legacy_files = sorted((root / "books").glob("[0-9]*/members.json"))
     if not legacy_files:
         if (root / "members.json").is_file():
             return {"migrated": False, "members": 0, "books": 0, "backup": None}
-        raise ValueError("No legacy members.json files found")
+        raise ValueError("未找到旧版 members.json 文件")
 
     parent = root.parent
     lock_path = parent / f".{root.name}.member-migration.lock"
@@ -71,7 +71,7 @@ def migrate_member_storage(data_dir: Path) -> dict:
                 for raw in raw_members:
                     old_id = str(raw["id"])
                     if old_id in mapping:
-                        raise ValueError(f"Duplicate member ID in book {book_id}: {old_id}")
+                        raise ValueError(f"账本 {book_id} 中存在重复成员 ID：{old_id}")
                     member_id = next_member_id
                     next_member_id += 1
                     mapping[old_id] = member_id
@@ -103,7 +103,7 @@ def migrate_member_storage(data_dir: Path) -> dict:
                     if bill.status != BillStatus.DRAFT:
                         shares = split_bill(bill, stay_lookup)
                         if sum(share.share_cents for share in shares) != bill.amount_cents:
-                            raise ValueError(f"Bill shares do not balance: {bill.id}")
+                            raise ValueError(f"账单分摊金额不守恒：{bill.id}")
                     bills.append(bill)
 
                 store.write_json(

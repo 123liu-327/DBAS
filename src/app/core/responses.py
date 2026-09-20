@@ -11,5 +11,5 @@ class ApiResponse(BaseModel, Generic[T]):
     data: T | None = None
 
 
-def ok(data: T | None = None, *, message: str = "success", code: int = 200) -> ApiResponse[T]:
+def ok(data: T | None = None, *, message: str = "操作成功", code: int = 200) -> ApiResponse[T]:
     return ApiResponse(code=code, message=message, data=data)

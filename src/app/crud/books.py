@@ -87,5 +87,5 @@ def delete_book(store: FileStore, book_id: int) -> None:
         directory = store.book_dir(book_id)
         if directory.exists():
             if not directory.resolve().is_relative_to(store.books_dir.resolve()):
-                raise ValueError("Book directory escapes data root")
+                raise ValueError("账本目录超出数据根目录")
             shutil.rmtree(directory)

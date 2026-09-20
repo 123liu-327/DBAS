@@ -59,7 +59,7 @@ class FileStore:
     def attachment_path(self, book_id: int, relative_path: str) -> Path:
         target = self._checked_path(self.book_dir(book_id) / relative_path)
         if not target.is_relative_to(self.attachments_dir(book_id).resolve()):
-            raise ValueError("Attachment path must stay inside the book attachments directory")
+            raise ValueError("附件路径必须位于当前账本的附件目录内")
         return target
 
     def book_lock(self, book_id: int) -> FileLock:
@@ -143,20 +143,20 @@ class FileStore:
     def _checked_path(self, path: Path) -> Path:
         target = path.resolve()
         if not target.is_relative_to(self.root):
-            raise ValueError("Data path must stay inside the configured data directory")
+            raise ValueError("数据路径必须位于配置的数据目录内")
         return target
 
     def _check_lock_scope(self, target: Path, book_id: int | None) -> None:
         if book_id is None:
             if target not in {self.sequences_path, self.members_path}:
-                raise ValueError("A book ID is required to write a book data file")
+                raise ValueError("写入账本数据文件时必须提供账本 ID")
         elif target.parent != self.book_dir(book_id):
-            raise ValueError("The book ID must match the data file being written")
+            raise ValueError("账本 ID 必须与正在写入的数据文件一致")
 
     @staticmethod
     def _validate_book_id(book_id: int) -> None:
         if isinstance(book_id, bool) or not isinstance(book_id, int) or book_id <= 0:
-            raise ValueError("Invalid book ID")
+            raise ValueError("账本 ID 无效")
 
     def publish_book(self, book_id: int, record: dict[str, Any]) -> None:
         """Make a complete empty book visible with one directory rename."""
@@ -164,7 +164,7 @@ class FileStore:
         self.books_dir.mkdir(parents=True, exist_ok=True)
         pending = self.books_dir / f".pending-{book_id}-{uuid4().hex}"
         if not pending.resolve().is_relative_to(self.books_dir.resolve()):
-            raise ValueError("Pending directory escapes data root")
+            raise ValueError("暂存目录超出数据根目录")
         try:
             pending.mkdir()
             self._atomic_write(pending / "book.json", self._serialize_json(record))
@@ -177,7 +177,7 @@ class FileStore:
         finally:
             if pending.exists():
                 if not pending.resolve().is_relative_to(self.books_dir.resolve()):
-                    raise ValueError("Pending directory escapes data root")
+                    raise ValueError("暂存目录超出数据根目录")
                 shutil.rmtree(pending)
 
     def cleanup_pending_books(self) -> None:
@@ -186,7 +186,7 @@ class FileStore:
         for pending in self.books_dir.glob(".pending-*"):
             if pending.is_dir():
                 if not pending.resolve().is_relative_to(self.books_dir.resolve()):
-                    raise ValueError("Pending directory escapes data root")
+                    raise ValueError("暂存目录超出数据根目录")
                 shutil.rmtree(pending)
 
     @staticmethod

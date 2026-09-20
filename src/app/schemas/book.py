@@ -23,9 +23,9 @@ class BookPatch(CamelModel):
     @model_validator(mode="after")
     def check_patch(self) -> "BookPatch":
         if not self.model_fields_set:
-            raise ValueError("At least one field is required")
+            raise ValueError("至少需要提供一个要修改的字段")
         if "name" in self.model_fields_set and self.name is None:
-            raise ValueError("name cannot be null")
+            raise ValueError("账本名称不能为 null")
         return self
 
 

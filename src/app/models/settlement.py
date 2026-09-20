@@ -19,7 +19,7 @@ class MemberBalance(CamelModel):
     @model_validator(mode="after")
     def check_net(self) -> "MemberBalance":
         if self.net_cents != self.paid_cents - self.share_cents:
-            raise ValueError("netCents must equal paidCents minus shareCents")
+            raise ValueError("净余额必须等于垫付金额减去分摊金额")
         return self
 
 
@@ -31,7 +31,7 @@ class Transfer(CamelModel):
     @model_validator(mode="after")
     def check_members(self) -> "Transfer":
         if self.from_member_id == self.to_member_id:
-            raise ValueError("transfer endpoints must differ")
+            raise ValueError("转账付款人与收款人不能相同")
         return self
 
 
@@ -53,10 +53,10 @@ class SettlementSnapshot(StoredModel):
     @model_validator(mode="after")
     def check_snapshot(self) -> "SettlementSnapshot":
         if self.end_month < self.start_month:
-            raise ValueError("endMonth cannot be earlier than startMonth")
+            raise ValueError("结束月份不能早于开始月份")
         if len(self.bill_ids) != len(set(self.bill_ids)):
-            raise ValueError("billIds cannot contain duplicates")
+            raise ValueError("账单 ID 不能重复")
         member_ids = [item.member_id for item in self.confirmations]
         if len(member_ids) != len(set(member_ids)):
-            raise ValueError("confirmations cannot contain duplicate members")
+            raise ValueError("成员确认记录不能重复")
         return self

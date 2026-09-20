@@ -19,7 +19,7 @@
 ```json
 {
   "code":200,
-  "message":"success",
+  "message":"操作成功",
   "data":{
     "bill":{
       "id":"b_001","bookId":1,"title":"电费","amountCents":4100,

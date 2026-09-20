@@ -13,7 +13,7 @@ class SettlementRange(CamelModel):
     @model_validator(mode="after")
     def check_range(self) -> "SettlementRange":
         if self.start_month > self.end_month:
-            raise ValueError("startMonth cannot be later than endMonth")
+            raise ValueError("开始月份不能晚于结束月份")
         return self
 
 

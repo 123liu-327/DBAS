@@ -173,7 +173,7 @@ def test_legacy_example_migration_preserves_references_and_shares(tmp_path: Path
         assert total == bill.amount_cents
     assert store.read_json(store.sequences_path)["nextBookId"] == 2
     assert store.read_json(store.sequences_path)["nextMemberId"] == 4
-    with pytest.raises(ValueError, match="new directory"):
+    with pytest.raises(ValueError, match="新目录"):
         migrate_legacy(source, target)
 
 
