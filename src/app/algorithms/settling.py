@@ -7,7 +7,7 @@ from app.models.settlement import Transfer
 
 def min_transfers(balances: list[tuple[int, int]]) -> list[Transfer]:
     if len(balances) > 6 or sum(amount for _, amount in balances) != 0:
-        raise ValueError("Balances must sum to zero and contain at most six members")
+        raise ValueError("成员净余额之和必须为零，并且成员数不能超过六人")
     ids = [member_id for member_id, _ in balances]
     initial = tuple(amount for _, amount in balances)
 
@@ -34,7 +34,7 @@ def min_transfers(balances: list[tuple[int, int]]) -> list[Transfer]:
             if best is None or len(candidate) < len(best):
                 best = candidate
         if best is None:
-            raise ValueError("Unbalanced settlement state")
+            raise ValueError("结算状态不平衡")
         return best
 
     return [

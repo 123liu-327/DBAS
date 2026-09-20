@@ -45,9 +45,9 @@ class BillPatch(CamelModel):
     @model_validator(mode="after")
     def check_patch(self) -> "BillPatch":
         if not self.model_fields_set:
-            raise ValueError("At least one field is required")
+            raise ValueError("至少需要提供一个要修改的字段")
         if "status" in self.model_fields_set and self.status is None:
-            raise ValueError("status cannot be null")
+            raise ValueError("账单状态不能为 null")
         return self
 
 

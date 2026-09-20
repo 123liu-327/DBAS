@@ -20,13 +20,13 @@ def migrate_legacy(source: Path, target: Path) -> dict[str, int]:
     source = source.resolve()
     target = target.resolve()
     if not source.is_dir() or not (source / "books.json").is_file():
-        raise ValueError("Source must contain a legacy books.json")
+        raise ValueError("源目录必须包含旧版 books.json")
     if target.exists() or target == source or target.is_relative_to(source):
-        raise ValueError("Target must be a new directory outside the source")
+        raise ValueError("目标必须是源目录之外的新目录")
     target.parent.mkdir(parents=True, exist_ok=True)
     stage = target.parent / f".{target.name}.migrating-{uuid4().hex}"
     if not stage.resolve().is_relative_to(target.parent.resolve()):
-        raise ValueError("Migration staging path escapes target parent")
+        raise ValueError("迁移暂存路径超出目标父目录")
 
     mapping: dict[str, int] = {}
     migrated_members: list[Member] = []
@@ -39,7 +39,7 @@ def migrate_legacy(source: Path, target: Path) -> dict[str, int]:
         for book_id, old_book in enumerate(records, start=1):
             old_id = old_book["id"]
             if not isinstance(old_id, str) or old_id in mapping:
-                raise ValueError("Legacy book IDs must be distinct strings")
+                raise ValueError("旧版账本 ID 必须是互不相同的字符串")
             mapping[old_id] = book_id
             book = Book.model_validate({**old_book, "id": book_id,
                                         "description": old_book.get("description")})
@@ -47,14 +47,14 @@ def migrate_legacy(source: Path, target: Path) -> dict[str, int]:
 
             old_dir = source / "books" / old_id
             if not old_dir.resolve().is_relative_to((source / "books").resolve()):
-                raise ValueError("Legacy book path escapes source")
+                raise ValueError("旧版账本路径超出源目录")
             members_raw = legacy.read_json(old_dir / "members.json", default={"members": []})
             member_ids: dict[str, int] = {}
             stays: list[Stay] = []
             for raw_member in members_raw["members"]:
                 old_member_id = str(raw_member["id"])
                 if old_member_id in member_ids:
-                    raise ValueError(f"Duplicate member ID in book {old_id}")
+                    raise ValueError(f"账本 {old_id} 中存在重复成员 ID")
                 member_id = next_member_id
                 next_member_id += 1
                 member_ids[old_member_id] = member_id
@@ -71,7 +71,7 @@ def migrate_legacy(source: Path, target: Path) -> dict[str, int]:
                     "updatedAt": raw_member.get("updatedAt"),
                 }))
             if len(member_ids) != len(members_raw["members"]):
-                raise ValueError(f"Duplicate member ID in book {old_id}")
+                raise ValueError(f"账本 {old_id} 中存在重复成员 ID")
             stay_map = {stay.member_id: stay for stay in stays}
             store.write_json(store.stays_path(book_id),
                              {"stays": [item.model_dump(mode="json") for item in stays]},
@@ -80,7 +80,7 @@ def migrate_legacy(source: Path, target: Path) -> dict[str, int]:
             bills = []
             for raw in legacy.read_jsonl(old_dir / "bills.jsonl"):
                 if raw.get("bookId") != old_id:
-                    raise ValueError(f"Bill references another book: {old_id}")
+                    raise ValueError(f"账单引用了其他账本：{old_id}")
                 try:
                     participants = [member_ids[str(value)] for value in raw.get("participants", [])]
                     payer_id = (
@@ -92,7 +92,7 @@ def migrate_legacy(source: Path, target: Path) -> dict[str, int]:
                         if raw.get("weights") is not None else None
                     )
                 except KeyError as exc:
-                    raise ValueError(f"Bill references missing member: {raw.get('id')}") from exc
+                    raise ValueError(f"账单引用了不存在的成员：{raw.get('id')}") from exc
                 bill = Bill.model_validate({
                     **raw, "bookId": book_id, "participants": participants,
                     "payerId": payer_id, "weights": weights,
@@ -100,7 +100,7 @@ def migrate_legacy(source: Path, target: Path) -> dict[str, int]:
                 if bill.status != BillStatus.DRAFT:
                     shares = split_bill(bill, stay_map)
                     if sum(item.share_cents for item in shares) != bill.amount_cents:
-                        raise ValueError(f"Bill shares do not balance: {bill.id}")
+                        raise ValueError(f"账单分摊金额不守恒：{bill.id}")
                 bills.append(bill)
             store.write_jsonl(store.bills_path(book_id),
                               [bill.model_dump(mode="json") for bill in bills],
@@ -109,13 +109,13 @@ def migrate_legacy(source: Path, target: Path) -> dict[str, int]:
             old_attachments = old_dir / "attachments"
             if old_attachments.exists():
                 if any(path.is_symlink() for path in old_attachments.rglob("*")):
-                    raise ValueError("Legacy attachments cannot contain symlinks")
+                    raise ValueError("旧版附件目录不能包含符号链接")
                 shutil.copytree(old_attachments, store.attachments_dir(book_id),
                                 dirs_exist_ok=True)
             for bill in bills:
                 for attachment in bill.attachments:
                     if not store.attachment_path(book_id, attachment.relative_path).is_file():
-                        raise ValueError(f"Missing attachment: {attachment.id}")
+                        raise ValueError(f"附件不存在：{attachment.id}")
 
         store.write_json(store.members_path, {
             "members": [member.model_dump(mode="json") for member in migrated_members]
@@ -132,7 +132,7 @@ def migrate_legacy(source: Path, target: Path) -> dict[str, int]:
     finally:
         if stage.exists():
             if not stage.resolve().is_relative_to(target.parent.resolve()):
-                raise ValueError("Migration staging path escapes target parent")
+                raise ValueError("迁移暂存路径超出目标父目录")
             shutil.rmtree(stage)
 
 

@@ -4,7 +4,7 @@ from uuid import uuid4
 
 from pydantic import ValidationError
 
-from app.core.exceptions import AppError
+from app.core.exceptions import AppError, validation_error_message
 from app.core.pagination import paginate
 from app.crud import bills as bill_crud
 from app.crud import members as member_crud
@@ -31,7 +31,9 @@ def checked_bill(raw: dict) -> Bill:
     try:
         return Bill.model_validate(raw)
     except ValidationError as exc:
-        raise AppError("INVALID_BILL", str(exc.errors()[0]["msg"]), status_code=422) from exc
+        raise AppError(
+            "INVALID_BILL", validation_error_message(exc.errors()[0]), status_code=422
+        ) from exc
 
 
 def list_bills(store: FileStore, book_id: int, month: str | None = None) -> list[Bill]:
@@ -146,7 +148,9 @@ def update_bill(store: FileStore, book_id: int, bill_id: str, data: BillPatch) -
         try:
             bill = original.with_updates(**changes)
         except ValidationError as exc:
-            raise AppError("INVALID_BILL", str(exc.errors()[0]["msg"]), status_code=422) from exc
+            raise AppError(
+                "INVALID_BILL", validation_error_message(exc.errors()[0]), status_code=422
+            ) from exc
         stays = stay_map(store, book_id)
         validate_members(bill, stays)
         if bill.status == BillStatus.POSTED:

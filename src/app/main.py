@@ -39,7 +39,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @application.get("/health", response_model=ApiResponse[HealthData], tags=["系统"])
     def health() -> ApiResponse[HealthData]:
-        return ok(HealthData(status="ok"))
+        return ok(HealthData(status="正常"))
 
     return application
 

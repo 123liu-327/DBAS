@@ -23,7 +23,7 @@
 打开 `http://127.0.0.1:8000/docs`。先调用 `GET /health`，预期 HTTP 200：
 
 ```json
-{"code":200,"message":"success","data":{"status":"ok"}}
+{"code":200,"message":"操作成功","data":{"status":"正常"}}
 ```
 
 ### 创建测试账本

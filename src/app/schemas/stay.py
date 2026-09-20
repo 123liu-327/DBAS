@@ -14,7 +14,7 @@ class StayCreate(StayInterval):
     @model_validator(mode="after")
     def check_member_id(self) -> "StayCreate":
         if self.member_id <= 0:
-            raise ValueError("memberId must be positive")
+            raise ValueError("成员 ID 必须为正整数")
         return self
 
 
@@ -25,15 +25,15 @@ class StayPatch(CamelModel):
     @model_validator(mode="after")
     def check_patch(self) -> "StayPatch":
         if not self.model_fields_set:
-            raise ValueError("At least one field is required")
+            raise ValueError("至少需要提供一个要修改的字段")
         if "join_date" in self.model_fields_set and self.join_date is None:
-            raise ValueError("joinDate cannot be null")
+            raise ValueError("入住日期不能为 null")
         if (
             self.join_date is not None
             and self.leave_date is not None
             and self.leave_date < self.join_date
         ):
-            raise ValueError("leaveDate cannot be earlier than joinDate")
+            raise ValueError("退宿日期不能早于入住日期")
         return self
 
 

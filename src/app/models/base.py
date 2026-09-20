@@ -36,19 +36,19 @@ class StoredModel(CamelModel):
             data["created_at"] = now
             data["updated_at"] = now
         elif created is None or updated is None:
-            raise ValueError("createdAt and updatedAt must be supplied together")
+            raise ValueError("createdAt 和 updatedAt 必须同时提供")
         return data
 
     @model_validator(mode="after")
     def check_timestamps(self) -> "StoredModel":
         if self.updated_at < self.created_at:
-            raise ValueError("updatedAt cannot be earlier than createdAt")
+            raise ValueError("updatedAt 不能早于 createdAt")
         return self
 
     def with_updates(self, **changes: Any) -> Self:
         """Validate a modified record while preserving its ID and creation time."""
         if {"id", "created_at", "createdAt", "updated_at", "updatedAt"} & changes.keys():
-            raise ValueError("ID and audit timestamps cannot be edited directly")
+            raise ValueError("不能直接修改 ID 和审计时间")
         values = self.model_dump(mode="python", by_alias=False)
         values.update(changes)
         values["updated_at"] = utc_now()
