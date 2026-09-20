@@ -1,0 +1,12 @@
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.venv/
+.env
+.idea/
+*.egg-info/
+/app/
+data/.locks/
+*.lock
+data.backup-members-*/
+examples/data.backup-members-*/
