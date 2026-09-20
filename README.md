@@ -62,6 +62,7 @@ data/
 ## 文档
 
 - [API](docs/API.md)
+- [F1–F5 手工测试说明](docs/MANUAL_TEST.md)
 - [前端响应设计](docs/FRONTEND_RESPONSE_DESIGN.md)
 - [项目说明](docs/PROJECT.md)
 - [提交自检](docs/SELF_CHECK.md)
