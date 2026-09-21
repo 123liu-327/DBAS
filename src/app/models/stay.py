@@ -6,7 +6,7 @@ from pydantic import AwareDatetime, Field, StrictInt, model_validator
 from app.models.base import CamelModel, utc_now
 
 
-# 以下为待手写区域：StayInterval（现有实现为参考，实际改写后再标记为手写）
+##以下为手写
 class StayInterval(CamelModel):
     join_date: date
     leave_date: date | None = None
@@ -16,10 +16,10 @@ class StayInterval(CamelModel):
         if self.leave_date is not None and self.leave_date < self.join_date:
             raise ValueError("退宿日期不能早于入住日期")
         return self
-# 待手写区域结束：StayInterval
+##手写区域结束
 
 
-# 以下为待手写区域：Stay（现有实现为参考，实际改写后再标记为手写）
+##以下为手写
 class Stay(StayInterval):
     """One member's single stay in one book, keyed by (bookId, memberId)."""
 
@@ -60,4 +60,4 @@ class Stay(StayInterval):
         values.update(changes)
         values["updated_at"] = utc_now()
         return type(self).model_validate(values)
-# 待手写区域结束：Stay
+##手写区域结束

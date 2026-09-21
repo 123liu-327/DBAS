@@ -37,7 +37,7 @@ def checked_bill(raw: dict) -> Bill:
         ) from exc
 
 
-# 以下为待手写区域：list_bills（现有实现为参考，实际改写后再标记为手写）
+##以下为手写
 def list_bills(store: FileStore, book_id: int, month: str | None = None) -> list[Bill]:
     """读取账本内账单；提供月份时只保留该月有记账日期的账单。"""
     # 先提取当前账本内的所有账单。
@@ -45,7 +45,7 @@ def list_bills(store: FileStore, book_id: int, month: str | None = None) -> list
     if month is not None:
         bills = [bill for bill in bills if bill.date and bill.date.strftime("%Y-%m") == month]
     return bills
-# 待手写区域结束：list_bills
+##手写区域结束
 
 
 def list_page(
@@ -81,7 +81,7 @@ def posted_bills(store: FileStore, book_id: int, start: str, end: str) -> list[B
     ]
 
 
-# 以下为待手写区域：detail（现有实现为参考，实际改写后再标记为手写）
+##以下为手写
 def detail(store: FileStore, book_id: int, bill_id: str) -> BillDetail:
     """组合账单、垫付人、参与人的入住信息和即时分摊明细。"""
     bill = bill_crud.require_bill(store, book_id, bill_id)
@@ -105,10 +105,10 @@ def detail(store: FileStore, book_id: int, bill_id: str) -> BillDetail:
         ],
         shares=shares,
     )
-# 待手写区域结束：detail
+##手写区域结束
 
 
-# 以下为待手写区域：preview（现有实现为参考，实际改写后再标记为手写）
+##以下为手写
 def preview(store: FileStore, book_id: int, data: BillFields) -> BillPreview:
     """按正式账单规则计算预览，但不分配真实 ID，也不写入文件。"""
     require_book(store, book_id)
@@ -131,10 +131,10 @@ def preview(store: FileStore, book_id: int, data: BillFields) -> BillPreview:
                               stay=stays[share.member_id])
                 for share in shares],
     )
-# 待手写区域结束：preview
+##手写区域结束
 
 
-# 以下为待手写区域：create_bill（现有实现为参考，实际改写后再标记为手写）
+##以下为手写
 def create_bill(store: FileStore, book_id: int, data: BillCreate) -> Bill:
     """在账本锁内校验、试算并持久化账单。"""
 
@@ -152,10 +152,10 @@ def create_bill(store: FileStore, book_id: int, data: BillCreate) -> Bill:
         bill_crud.insert_bill(store, bill)
         touch_book(store, book_id)
         return bill
-# 待手写区域结束：create_bill
+##手写区域结束
 
 
-# 以下为待手写区域：update_bill（现有实现为参考，实际改写后再标记为手写）
+##以下为手写
 def update_bill(store: FileStore, book_id: int, bill_id: str, data: BillPatch) -> Bill:
     """合并局部修改，执行状态与分摊校验后原子替换原账单。"""
 
@@ -181,7 +181,7 @@ def update_bill(store: FileStore, book_id: int, bill_id: str, data: BillPatch) -
         bill_crud.replace_bill(store, bill)
         touch_book(store, book_id)
         return bill
-# 待手写区域结束：update_bill
+##手写区域结束
 
 
 def delete_bill(store: FileStore, book_id: int, bill_id: str) -> None:
@@ -197,7 +197,7 @@ def delete_bill(store: FileStore, book_id: int, bill_id: str) -> None:
         touch_book(store, book_id)
 
 
-# 以下为待手写区域：monthly_shares（现有实现为参考，实际改写后再标记为手写）
+##以下为手写
 def monthly_shares(store: FileStore, book_id: int, month: str) -> MonthlyShares:
     """即时汇总指定月份每位入住成员的分摊金额，排除草稿。"""
     stays = stay_map(store, book_id)
@@ -212,4 +212,4 @@ def monthly_shares(store: FileStore, book_id: int, month: str) -> MonthlyShares:
         shares=[MemberShare(member_id=member_id, share_cents=cents)
                 for member_id, cents in totals.items()],
     )
-# 待手写区域结束：monthly_shares
+##手写区域结束

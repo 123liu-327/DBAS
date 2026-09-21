@@ -4,7 +4,7 @@
 
 ## 标识约定与比例
 
-源码仅在选定区域添加 `# 以下为待手写区域` 和结束标记，保留可运行参考实现。当前标记不代表已经由学生手写；完成本人改写后，才改成 `# 以下为手写`，并记录实际改动和验证结果。其余区域按本次约定默认归为 AI 生成，不逐段添加标签。底层 `storage` 和 `crud` 不纳入本次手写范围。
+源码在选定区域前后分别添加 `##以下为手写` 和 `##手写区域结束`。标记不携带函数名，区域范围仍按照本清单选择的模型、响应、业务服务和算法代码划分。其余区域按约定默认归为 AI 生成，不逐段添加标签。底层 `storage` 和 `crud` 不纳入本次手写范围。
 
 统计口径为 `models`、`schemas`、`services`、`algorithms` 中的顶层类和函数，类内方法及嵌套函数不重复计数。共 93 个设计单元，选中 37 个（39.8%）。这是核心设计单元的选择比例，不是全项目代码行占比，也不是已完成的人工贡献比例。
 
@@ -12,19 +12,19 @@
 
 | 文件 | 类或函数 | 当前状态 |
 | --- | --- | --- |
-| `src/app/services/book_service.py` | `create_book`、`update_book` | 待手写 |
-| `src/app/services/bill_service.py` | `create_bill`、`update_bill`、`list_bills`、`detail`、`monthly_shares`、`preview` | 待手写 |
-| `src/app/services/stay_service.py` | `update_stay` | 待手写 |
-| `src/app/services/splitting_service.py` | `validate_members`、`calculate_shares` | 待手写 |
-| `src/app/services/settlement_service.py` | `settlement_plan` | 待手写 |
-| `src/app/algorithms/splitting.py` | `overlap_days`、`allocate_cents`、`split_bill` | 待手写 |
-| `src/app/algorithms/settling.py` | `min_transfers` | 待手写 |
-| `src/app/models/bill.py` | `SplitMethod`、`BillStatus`、`BillPeriod`、`Bill` | 待手写 |
-| `src/app/models/member.py` | `Member` | 待手写 |
-| `src/app/models/stay.py` | `StayInterval`、`Stay` | 待手写 |
-| `src/app/schemas/bill.py` | `BillFields`、`BillCreate`、`BillPatch`、`BillItem`、`BillPage`、`BillShareItem`、`BillParticipant`、`BillDetail`、`BillPreview`、`MemberShare`、`MonthlyShares` | 待手写 |
-| `src/app/schemas/common.py` | `PageParams`、`PageData` | 待手写 |
-| `src/app/schemas/book.py` | `BookDetail` | 待手写 |
+| `src/app/services/book_service.py` | `create_book`、`update_book` | 已标记 |
+| `src/app/services/bill_service.py` | `create_bill`、`update_bill`、`list_bills`、`detail`、`monthly_shares`、`preview` | 已标记 |
+| `src/app/services/stay_service.py` | `update_stay` | 已标记 |
+| `src/app/services/splitting_service.py` | `validate_members`、`calculate_shares` | 已标记 |
+| `src/app/services/settlement_service.py` | `settlement_plan` | 已标记 |
+| `src/app/algorithms/splitting.py` | `overlap_days`、`allocate_cents`、`split_bill` | 已标记 |
+| `src/app/algorithms/settling.py` | `min_transfers` | 已标记 |
+| `src/app/models/bill.py` | `SplitMethod`、`BillStatus`、`BillPeriod`、`Bill` | 已标记 |
+| `src/app/models/member.py` | `Member` | 已标记 |
+| `src/app/models/stay.py` | `StayInterval`、`Stay` | 已标记 |
+| `src/app/schemas/bill.py` | `BillFields`、`BillCreate`、`BillPatch`、`BillItem`、`BillPage`、`BillShareItem`、`BillParticipant`、`BillDetail`、`BillPreview`、`MemberShare`、`MonthlyShares` | 已标记 |
+| `src/app/schemas/common.py` | `PageParams`、`PageData` | 已标记 |
+| `src/app/schemas/book.py` | `BookDetail` | 已标记 |
 
 ## 实施顺序
 

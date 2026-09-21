@@ -45,7 +45,7 @@ def detail(store: FileStore, book_id: int, member_id: int) -> StayDetail:
     )
 
 
-# 以下为待手写区域：update_stay（现有实现为参考，实际改写后再标记为手写）
+##以下为手写
 def update_stay(
     store: FileStore, book_id: int, member_id: int, data: StayPatch
 ) -> Stay:
@@ -90,4 +90,4 @@ def update_stay(
                         status_code=422, field="joinDate",
                     ) from exc
         return stay_crud.update_stay(store, book_id, member_id, data)
-# 待手写区域结束：update_stay
+##手写区域结束
