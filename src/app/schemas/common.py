@@ -13,10 +13,8 @@ T = TypeVar("T")
 class PageParams(CamelModel):
     page: int = Field(default=1, ge=1)
     page_size: int = Field(default=10, ge=1, le=100)
-##手写区域结束
 
 
-##以下为手写
 class PageData(CamelModel, Generic[T]):
     list: list[T]
     total: int = Field(ge=0)

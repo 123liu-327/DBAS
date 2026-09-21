@@ -16,10 +16,8 @@ class StayInterval(CamelModel):
         if self.leave_date is not None and self.leave_date < self.join_date:
             raise ValueError("退宿日期不能早于入住日期")
         return self
-##手写区域结束
 
 
-##以下为手写
 class Stay(StayInterval):
     """One member's single stay in one book, keyed by (bookId, memberId)."""
 

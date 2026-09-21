@@ -24,16 +24,12 @@ class BillFields(CamelModel):
     payer_id: StrictInt | None = None
     period: BillPeriod | None = None
     weights: dict[int, StrictInt] | None = None
-##手写区域结束
 
 
-##以下为手写
 class BillCreate(BillFields):
     status: Literal[BillStatus.DRAFT, BillStatus.POSTED] = BillStatus.POSTED
-##手写区域结束
 
 
-##以下为手写
 class BillPatch(CamelModel):
     title: str | None = Field(default=None, max_length=20)
     category: str | None = None
@@ -54,10 +50,8 @@ class BillPatch(CamelModel):
         if "status" in self.model_fields_set and self.status is None:
             raise ValueError("账单状态不能为 null")
         return self
-##手写区域结束
 
 
-##以下为手写
 class BillItem(CamelModel):
     id: str
     book_id: StrictInt
@@ -72,55 +66,41 @@ class BillItem(CamelModel):
     attachment_count: int
     created_at: datetime
     updated_at: datetime
-##手写区域结束
 
 
-##以下为手写
 class BillPage(PageData[BillItem]):
     pass
-##手写区域结束
 
 
-##以下为手写
 class BillShareItem(ShareDetail):
     member: Member
     stay: Stay
-##手写区域结束
 
 
-##以下为手写
 class BillParticipant(CamelModel):
     member: Member
     stay: Stay
-##手写区域结束
 
 
-##以下为手写
 class BillDetail(CamelModel):
     bill: Bill
     payer: Member | None
     participants: list[BillParticipant]
     shares: list[BillShareItem]
-##手写区域结束
 
 
-##以下为手写
 class BillPreview(CamelModel):
     total_cents: int
     payer: Member
     participants: list[BillParticipant]
     shares: list[BillShareItem]
-##手写区域结束
 
 
-##以下为手写
 class MemberShare(CamelModel):
     member_id: int
     share_cents: int
-##手写区域结束
 
 
-##以下为手写
 class MonthlyShares(CamelModel):
     month: str
     shares: list[MemberShare]

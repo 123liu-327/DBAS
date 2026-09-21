@@ -13,10 +13,8 @@ def overlap_days(start: date, end: date, stay: Stay) -> int:
     last = min(end, stay.leave_date or end)
     first = max(start, stay.join_date)
     return max(0, (last - first).days + 1)
-##手写区域结束
 
 
-##以下为手写
 def allocate_cents(amount_cents: int, weights: list[int]) -> list[int]:
     total = sum(weights)
     if amount_cents <= 0 or total <= 0 or any(weight < 0 for weight in weights):
@@ -28,10 +26,8 @@ def allocate_cents(amount_cents: int, weights: list[int]) -> list[int]:
     for index in priority[:remaining]:
         shares[index] += 1
     return shares
-##手写区域结束
 
 
-##以下为手写
 def split_bill(bill: Bill, stays: Mapping[int, Stay]) -> list[ShareDetail]:
     if bill.amount_cents is None or bill.method is None or not bill.participants:
         raise ValueError("账单信息不完整，无法计算分摊")
