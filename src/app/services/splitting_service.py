@@ -1,4 +1,4 @@
-"""Book-aware validation and a single entry point for bill shares."""
+"""分摊业务服务：连接账本入住数据与纯分摊算法的统一入口。"""
 
 from collections.abc import Mapping
 
@@ -12,10 +12,12 @@ from app.storage import FileStore
 
 
 def stay_map(store: FileStore, book_id: int) -> dict[int, Stay]:
+    """将当前账本入住记录转换为以 memberId 为键的快速查询表。"""
     return {stay.member_id: stay for stay in stay_crud.list_stays(store, book_id)}
 
 
 def validate_members(bill: Bill, stays: Mapping[int, Stay]) -> None:
+    """确认所有参与人和垫付人在当前账本都有入住记录。"""
     missing = [member_id for member_id in bill.participants if member_id not in stays]
     if bill.payer_id is not None and bill.payer_id not in stays:
         missing.append(bill.payer_id)
@@ -27,8 +29,11 @@ def validate_members(bill: Bill, stays: Mapping[int, Stay]) -> None:
 
 
 def calculate_shares(bill: Bill, stays: Mapping[int, Stay]) -> list[ShareDetail]:
+    """调用纯算法计算分摊，并在服务边界保证金额守恒。"""
+
     validate_members(bill, stays)
     try:
+        # 算法层只处理数据计算；这里将算法异常转换为统一 API 业务错误。
         shares = split_bill(bill, stays)
     except (ValueError, KeyError) as exc:
         raise AppError("INVALID_SPLIT", str(exc), status_code=422) from exc

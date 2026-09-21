@@ -1,4 +1,4 @@
-"""Stay response composition and cross-resource date checks."""
+"""入住业务服务：组合成员信息，并检查日期修改对按天账单的影响。"""
 
 from pydantic import ValidationError
 
@@ -15,6 +15,7 @@ from app.storage import FileStore
 
 
 def item(store: FileStore, stay: Stay) -> StayItem:
+    """将入住记录、成员档案和账单使用数量组合为前端列表项。"""
     member = member_crud.require_member(store, stay.member_id)
     bills = bill_crud.list_bills(store, stay.book_id)
     return StayItem(
@@ -25,6 +26,7 @@ def item(store: FileStore, stay: Stay) -> StayItem:
 
 
 def list_page(store: FileStore, book_id: int, page: int, page_size: int) -> StayPage:
+    """分页返回指定账本的入住记录。"""
     records = paginate(stay_crud.list_stays(store, book_id), page, page_size)
     return StayPage(
         list=[item(store, stay) for stay in records.list],
@@ -33,6 +35,7 @@ def list_page(store: FileStore, book_id: int, page: int, page_size: int) -> Stay
 
 
 def detail(store: FileStore, book_id: int, member_id: int) -> StayDetail:
+    """返回一条入住记录及对应成员、参与和垫付次数。"""
     stay_item = item(store, stay_crud.require_stay(store, book_id, member_id))
     return StayDetail(
         stay=Stay.model_validate(
@@ -45,6 +48,9 @@ def detail(store: FileStore, book_id: int, member_id: int) -> StayDetail:
 def update_stay(
     store: FileStore, book_id: int, member_id: int, data: StayPatch
 ) -> Stay:
+    """修改入住日期，并阻止破坏既有账单分摊的变更。"""
+
+    # 修改和影响检查处于同一个账本锁内，避免检查后数据被并发改写。
     with store.book_lock(book_id):
         original = stay_crud.require_stay(store, book_id, member_id)
         try:
@@ -58,10 +64,12 @@ def update_stay(
             ) from exc
         stays = stay_map(store, book_id)
         stays[member_id] = proposed
+        # 只有包含该成员的按天账单会受到入住日期变化影响。
         for bill in bill_crud.list_bills(store, book_id):
             if bill.method != SplitMethod.BY_DAYS or member_id not in bill.participants:
                 continue
             if bill.status in {BillStatus.LOCKED, BillStatus.SETTLED}:
+                # 锁定或结清账单的历史分摊不能改变，因此比较修改前后的结果。
                 before = calculate_shares(bill, stay_map(store, book_id))
                 after = calculate_shares(bill, stays)
                 if before != after:
@@ -70,6 +78,7 @@ def update_stay(
                         status_code=409, field="joinDate",
                     )
             elif bill.status == BillStatus.POSTED:
+                # 普通已入账账单允许动态重算，但修改后仍须能够有效分摊。
                 try:
                     calculate_shares(bill, stays)
                 except AppError as exc:

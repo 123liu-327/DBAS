@@ -1,4 +1,4 @@
-"""One-time demonstration books for a fresh data directory."""
+"""启动初始化服务：准备全局成员文件，并为全新目录注入演示账本。"""
 
 from app.crud.books import get_book, list_books
 from app.models.book import Book
@@ -19,7 +19,7 @@ DEMO_BOOKS = (
 
 
 def prepare_member_storage(store: FileStore) -> None:
-    """Create global member storage and reject the pre-split layout."""
+    """创建全局成员文件；检测到旧版账本内成员文件时要求先迁移。"""
     legacy_files = []
     if store.books_dir.exists():
         legacy_files = [
@@ -30,7 +30,7 @@ def prepare_member_storage(store: FileStore) -> None:
         ]
     if legacy_files:
         raise StorageError(
-            "Legacy per-book members.json found; stop the app and run "
+            "发现旧版账本级 members.json；请停止应用并运行 "
             "`python -m app.storage.migrate_members --data-dir data`"
         )
     with store.index_lock():
@@ -39,8 +39,10 @@ def prepare_member_storage(store: FileStore) -> None:
 
 
 def seed_demo_books(store: FileStore) -> None:
-    """Resume an interrupted seed before serving requests; never overwrite user books."""
+    """在空目录创建十个演示账本；中断后可续建，且不会覆盖用户数据。"""
+
     with store.index_lock():
+        # 先清理未发布的暂存目录，再根据序列文件判断是否需要继续初始化。
         store.cleanup_pending_books()
         state = store.read_json(store.sequences_path)
         if state is not None and state.get("seedInProgress"):
@@ -49,7 +51,7 @@ def seed_demo_books(store: FileStore) -> None:
             if state is not None or list_books(store):
                 return
             if (store.root / "books.json").exists():
-                raise StorageError("Legacy books.json found; migrate data before starting")
+                raise StorageError("发现旧版 books.json，请迁移数据后再启动应用")
             start_id = 1
             state = {"nextBookId": start_id + len(DEMO_BOOKS),
                      "seedInProgress": True, "seedStartId": start_id}
@@ -62,7 +64,7 @@ def seed_demo_books(store: FileStore) -> None:
                 book = Book(id=book_id, name=name, description=description)
                 store.publish_book(book_id, book.model_dump(mode="json"))
             elif existing.name != name or existing.description != description:
-                raise StorageError(f"Seed book ID {book_id} is occupied by different data")
+                raise StorageError(f"演示账本 ID {book_id} 已被其他数据占用")
 
         state["nextBookId"] = max(state["nextBookId"], start_id + len(DEMO_BOOKS))
         state.pop("seedInProgress", None)

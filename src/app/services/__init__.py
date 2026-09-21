@@ -1,1 +1,1 @@
-"""Book, bill, splitting, settlement, and report business workflows."""
+"""账本、成员、入住、账单、分摊、结算、报表和附件的业务流程层。"""
