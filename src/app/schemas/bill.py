@@ -12,7 +12,7 @@ from app.models.stay import Stay
 from app.schemas.common import PageData
 
 
-# 以下为待手写区域：BillFields（现有实现为参考，实际改写后再标记为手写）
+##以下为手写
 class BillFields(CamelModel):
     title: str | None = Field(default=None, max_length=20)
     category: str | None = None
@@ -24,16 +24,16 @@ class BillFields(CamelModel):
     payer_id: StrictInt | None = None
     period: BillPeriod | None = None
     weights: dict[int, StrictInt] | None = None
-# 待手写区域结束：BillFields
+##手写区域结束
 
 
-# 以下为待手写区域：BillCreate（现有实现为参考，实际改写后再标记为手写）
+##以下为手写
 class BillCreate(BillFields):
     status: Literal[BillStatus.DRAFT, BillStatus.POSTED] = BillStatus.POSTED
-# 待手写区域结束：BillCreate
+##手写区域结束
 
 
-# 以下为待手写区域：BillPatch（现有实现为参考，实际改写后再标记为手写）
+##以下为手写
 class BillPatch(CamelModel):
     title: str | None = Field(default=None, max_length=20)
     category: str | None = None
@@ -54,10 +54,10 @@ class BillPatch(CamelModel):
         if "status" in self.model_fields_set and self.status is None:
             raise ValueError("账单状态不能为 null")
         return self
-# 待手写区域结束：BillPatch
+##手写区域结束
 
 
-# 以下为待手写区域：BillItem（现有实现为参考，实际改写后再标记为手写）
+##以下为手写
 class BillItem(CamelModel):
     id: str
     book_id: StrictInt
@@ -72,56 +72,56 @@ class BillItem(CamelModel):
     attachment_count: int
     created_at: datetime
     updated_at: datetime
-# 待手写区域结束：BillItem
+##手写区域结束
 
 
-# 以下为待手写区域：BillPage（现有实现为参考，实际改写后再标记为手写）
+##以下为手写
 class BillPage(PageData[BillItem]):
     pass
-# 待手写区域结束：BillPage
+##手写区域结束
 
 
-# 以下为待手写区域：BillShareItem（现有实现为参考，实际改写后再标记为手写）
+##以下为手写
 class BillShareItem(ShareDetail):
     member: Member
     stay: Stay
-# 待手写区域结束：BillShareItem
+##手写区域结束
 
 
-# 以下为待手写区域：BillParticipant（现有实现为参考，实际改写后再标记为手写）
+##以下为手写
 class BillParticipant(CamelModel):
     member: Member
     stay: Stay
-# 待手写区域结束：BillParticipant
+##手写区域结束
 
 
-# 以下为待手写区域：BillDetail（现有实现为参考，实际改写后再标记为手写）
+##以下为手写
 class BillDetail(CamelModel):
     bill: Bill
     payer: Member | None
     participants: list[BillParticipant]
     shares: list[BillShareItem]
-# 待手写区域结束：BillDetail
+##手写区域结束
 
 
-# 以下为待手写区域：BillPreview（现有实现为参考，实际改写后再标记为手写）
+##以下为手写
 class BillPreview(CamelModel):
     total_cents: int
     payer: Member
     participants: list[BillParticipant]
     shares: list[BillShareItem]
-# 待手写区域结束：BillPreview
+##手写区域结束
 
 
-# 以下为待手写区域：MemberShare（现有实现为参考，实际改写后再标记为手写）
+##以下为手写
 class MemberShare(CamelModel):
     member_id: int
     share_cents: int
-# 待手写区域结束：MemberShare
+##手写区域结束
 
 
-# 以下为待手写区域：MonthlyShares（现有实现为参考，实际改写后再标记为手写）
+##以下为手写
 class MonthlyShares(CamelModel):
     month: str
     shares: list[MemberShare]
-# 待手写区域结束：MonthlyShares
+##手写区域结束

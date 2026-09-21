@@ -7,7 +7,7 @@ from app.models.attachment import Attachment
 from app.models.base import CamelModel, StoredModel
 
 
-# 以下为待手写区域：SplitMethod（现有实现为参考，实际改写后再标记为手写）
+##以下为手写
 class SplitMethod(StrEnum):
     """账单分摊方式。
 
@@ -18,10 +18,10 @@ class SplitMethod(StrEnum):
     EVEN = "EVEN"
     BY_DAYS = "BY_DAYS"
     BY_WEIGHT = "BY_WEIGHT"
-# 待手写区域结束：SplitMethod
+##手写区域结束
 
 
-# 以下为待手写区域：BillStatus（现有实现为参考，实际改写后再标记为手写）
+##以下为手写
 class BillStatus(StrEnum):
     """账单业务状态，与 HTTP 状态码无关。
 
@@ -33,10 +33,10 @@ class BillStatus(StrEnum):
     POSTED = "POSTED"
     LOCKED = "LOCKED"
     SETTLED = "SETTLED"
-# 待手写区域结束：BillStatus
+##手写区域结束
 
 
-# 以下为待手写区域：BillPeriod（现有实现为参考，实际改写后再标记为手写）
+##以下为手写
 class BillPeriod(CamelModel):
     """按天分摊的闭区间，开始和结束日期当天都计入有效天数。"""
 
@@ -48,10 +48,10 @@ class BillPeriod(CamelModel):
         if self.end < self.start:
             raise ValueError("分摊周期结束日期不能早于开始日期")
         return self
-# 待手写区域结束：BillPeriod
+##手写区域结束
 
 
-# 以下为待手写区域：Bill（现有实现为参考，实际改写后再标记为手写）
+##以下为手写
 class Bill(StoredModel):
     """持久化账单模型。
 
@@ -134,4 +134,4 @@ class Bill(StoredModel):
                 if self.weights is None or set(self.weights) != set(self.participants):
                     raise ValueError("按权重分摊必须为每位参与人提供且只提供一个权重")
         return self
-# 待手写区域结束：Bill
+##手写区域结束
