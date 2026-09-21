@@ -8,12 +8,15 @@ from app.models.share import ShareDetail
 from app.models.stay import Stay
 
 
+# 以下为待手写区域：overlap_days（现有实现为参考，实际改写后再标记为手写）
 def overlap_days(start: date, end: date, stay: Stay) -> int:
     last = min(end, stay.leave_date or end)
     first = max(start, stay.join_date)
     return max(0, (last - first).days + 1)
+# 待手写区域结束：overlap_days
 
 
+# 以下为待手写区域：allocate_cents（现有实现为参考，实际改写后再标记为手写）
 def allocate_cents(amount_cents: int, weights: list[int]) -> list[int]:
     total = sum(weights)
     if amount_cents <= 0 or total <= 0 or any(weight < 0 for weight in weights):
@@ -25,8 +28,10 @@ def allocate_cents(amount_cents: int, weights: list[int]) -> list[int]:
     for index in priority[:remaining]:
         shares[index] += 1
     return shares
+# 待手写区域结束：allocate_cents
 
 
+# 以下为待手写区域：split_bill（现有实现为参考，实际改写后再标记为手写）
 def split_bill(bill: Bill, stays: Mapping[int, Stay]) -> list[ShareDetail]:
     if bill.amount_cents is None or bill.method is None or not bill.participants:
         raise ValueError("账单信息不完整，无法计算分摊")
@@ -57,3 +62,4 @@ def split_bill(bill: Bill, stays: Mapping[int, Stay]) -> list[ShareDetail]:
         )
         for index, member_id in enumerate(bill.participants)
     ]
+# 待手写区域结束：split_bill

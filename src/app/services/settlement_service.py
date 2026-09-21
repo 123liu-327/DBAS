@@ -9,6 +9,7 @@ from app.services.splitting_service import calculate_shares, stay_map
 from app.storage import FileStore
 
 
+# 以下为待手写区域：settlement_plan（现有实现为参考，实际改写后再标记为手写）
 def settlement_plan(store: FileStore, book_id: int, period: SettlementRange) -> SettlementPlan:
     """基于指定范围内的 POSTED 账单生成一次只读结算方案。"""
 
@@ -36,3 +37,4 @@ def settlement_plan(store: FileStore, book_id: int, period: SettlementRange) -> 
         balances=balances, net_sum_cents=net_sum, balanced=net_sum == 0,
         transfers=min_transfers([(item.member_id, item.net_cents) for item in balances]),
     )
+# 待手写区域结束：settlement_plan

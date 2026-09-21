@@ -6,8 +6,8 @@ from app.core.config import Settings
 from app.main import create_app
 
 
-def test_health_and_openapi() -> None:
-    client = TestClient(create_app())
+def test_health_and_openapi(tmp_path: Path) -> None:
+    client = TestClient(create_app(Settings(data_dir=tmp_path, seed_demo_books=False)))
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json() == {

@@ -48,3 +48,11 @@ data/
 启动只检测旧的逐账本 `members.json`，不会自动改写。`app.storage.migrate_members` 在应用停止时复制到暂存目录、转换成员和账单引用、验证分摊后交换目录，并保留原目录备份。旧 `(bookId, oldMemberId)` 分别映射为新的全局数字成员，不按姓名合并。
 
 文件后端适合课程规模。分页和聚合需要扫描文件，多文件组合查询不提供数据库事务快照。结算建议不会修改账单状态或记录付款。
+
+## 请求链路与改写入口
+
+启动时 create_app 注册 `/api` 路由、依赖和统一异常处理。创建账单经过 BillCreate → bill_service.create_bill → Bill 校验 → splitting_service → 纯算法 → bill_crud → FileStore。详情查询组合 Bill、全局 Member、账本 Stay 和即时 ShareDetail，再由 ApiResponse 输出。
+
+同一 Book 可以包含多笔 Bill，月份筛选依据 Bill.date，先筛选再分页。结算建议仅读取 POSTED，月累计排除 DRAFT。数据修改操作的具体锁范围以服务和 CRUD 实现为准，文件原子替换不等同于多文件数据库事务。
+
+人工改写范围、计数方法与待填写的实际修改记录见 [HANDWRITTEN_PLAN.md](HANDWRITTEN_PLAN.md)。

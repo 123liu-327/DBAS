@@ -68,3 +68,7 @@ data/
 - [提交自检](docs/SELF_CHECK.md)
 
 除 CSV 和附件下载外，成功响应使用 `code/message/data`，错误使用 `error.code/message/field`，删除返回空响应体的 HTTP 204。
+
+## 核心代码阅读与人工改写
+
+见 [人工改写清单](docs/HANDWRITTEN_PLAN.md)：37/93 个核心设计单元（39.8%）已局部标记为待手写；现有实现保留运行。其余区域默认 AI 生成，底层存储不纳入手写范围。验收结果见 [自检报告](docs/SELF_CHECK.md)。测试使用临时数据目录，不依赖迁移备份目录。

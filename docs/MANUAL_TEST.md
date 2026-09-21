@@ -223,3 +223,9 @@ T12 手工核对方法：建立 `memberId -> netCents` 表。对每条转账执�
 ## 7. 测试记录建议
 
 每个用例记录：测试日期、接口、请求 JSON、HTTP 状态码、实际响应、是否通过。异常用例重点保留 `error.code/message/field`；分摊和结算用例保留金额求和过程。完成后删除“F1-F5手工测试”账本，若账本仍有关联 Stay 或账单，需先删除账单，再删除 Stay，最后删除账本和不再使用的全局 Member。
+
+## 补充：按记账月份筛选（2026-09-21）
+
+在同一账本创建两笔日期分别为 2026-03-31、2026-04-01 的完整账单，即使分摊周期都在三月，查询 `GET /api/books/{bookId}/bills?month=2026-04&page=1&pageSize=1` 也只返回第二笔。增加无 date 草稿，确认它出现在未筛选列表中，但不出现在任何月份筛选结果里。total 应表示筛选后的数量。
+
+新增自动用例见 `tests/test_bills_api.py` 的 `test_month_filter_uses_booking_date_and_paginates_after_filter`。人工改写区域见 [HANDWRITTEN_PLAN.md](HANDWRITTEN_PLAN.md)，标记本身不代表测试或人工改写已经完成。

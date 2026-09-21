@@ -16,6 +16,7 @@ def stay_map(store: FileStore, book_id: int) -> dict[int, Stay]:
     return {stay.member_id: stay for stay in stay_crud.list_stays(store, book_id)}
 
 
+# 以下为待手写区域：validate_members（现有实现为参考，实际改写后再标记为手写）
 def validate_members(bill: Bill, stays: Mapping[int, Stay]) -> None:
     """确认所有参与人和垫付人在当前账本都有入住记录。"""
     missing = [member_id for member_id in bill.participants if member_id not in stays]
@@ -26,8 +27,10 @@ def validate_members(bill: Bill, stays: Mapping[int, Stay]) -> None:
             "STAY_NOT_FOUND", "参与人或垫付人在此账本没有入住记录",
             status_code=422, field="participants",
         )
+# 待手写区域结束：validate_members
 
 
+# 以下为待手写区域：calculate_shares（现有实现为参考，实际改写后再标记为手写）
 def calculate_shares(bill: Bill, stays: Mapping[int, Stay]) -> list[ShareDetail]:
     """调用纯算法计算分摊，并在服务边界保证金额守恒。"""
 
@@ -40,3 +43,4 @@ def calculate_shares(bill: Bill, stays: Mapping[int, Stay]) -> list[ShareDetail]
     if sum(item.share_cents for item in shares) != bill.amount_cents:
         raise AppError("INVALID_SPLIT", "分摊金额与账单金额不一致", status_code=422)
     return shares
+# 待手写区域结束：calculate_shares
