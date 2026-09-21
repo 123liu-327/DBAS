@@ -1,4 +1,4 @@
-"""Global member response composition and deletion protection."""
+"""全局成员业务服务：跨账本汇总入住与账单使用情况。"""
 
 from app.core.pagination import paginate
 from app.crud import bills as bill_crud
@@ -10,6 +10,7 @@ from app.storage import FileStore
 
 
 def _usage(store: FileStore, member_id: int) -> tuple[list, int, int]:
+    """扫描各账本，统计成员的入住、参与账单和垫付账单数量。"""
     stays = []
     bill_count = 0
     paid_bill_count = 0
@@ -25,6 +26,7 @@ def _usage(store: FileStore, member_id: int) -> tuple[list, int, int]:
 
 
 def list_page(store: FileStore, page: int, page_size: int) -> MemberPage:
+    """分页返回成员档案，并为当前页成员补充使用数量。"""
     records = paginate(member_crud.list_members(store), page, page_size)
     items = []
     for member in records.list:
@@ -38,6 +40,7 @@ def list_page(store: FileStore, page: int, page_size: int) -> MemberPage:
 
 
 def detail(store: FileStore, member_id: int) -> MemberDetail:
+    """组合成员档案、全部入住记录及账单使用统计。"""
     member = member_crud.require_member(store, member_id)
     stays, bill_count, paid_bill_count = _usage(store, member_id)
     return MemberDetail(

@@ -1,4 +1,4 @@
-"""Bill receipt metadata and files, isolated by book."""
+"""账单附件业务服务：校验文件并维护账单元数据与账本内实际文件。"""
 
 from pathlib import Path
 from uuid import uuid4
@@ -18,6 +18,7 @@ MEDIA_TYPES = {
 
 
 def _valid_signature(extension: str, contents: bytes) -> bool:
+    """根据文件头校验真实格式，防止只修改扩展名绕过限制。"""
     if extension == ".png":
         return contents.startswith(b"\x89PNG\r\n\x1a\n")
     if extension in {".jpg", ".jpeg"}:
@@ -31,6 +32,8 @@ def add_attachment(
     store: FileStore, book_id: int, bill_id: str, *, file_name: str,
     content_type: str, contents: bytes,
 ) -> Attachment:
+    """校验并保存附件；任一元数据写入失败时回滚已写入文件。"""
+
     bill_crud.require_bill(store, book_id, bill_id)
     safe_name = Path(file_name.replace("\\", "/")).name
     extension = Path(safe_name).suffix.lower()
@@ -69,12 +72,14 @@ def add_attachment(
 
 
 def list_attachments(store: FileStore, book_id: int, bill_id: str) -> list[Attachment]:
+    """读取账单中保存的附件元数据列表。"""
     return bill_crud.require_bill(store, book_id, bill_id).attachments
 
 
 def require_attachment(
     store: FileStore, book_id: int, bill_id: str, attachment_id: str
 ) -> Attachment:
+    """按附件 ID 查找元数据，不存在时返回统一的 404 业务错误。"""
     for attachment in list_attachments(store, book_id, bill_id):
         if attachment.id == attachment_id:
             return attachment
@@ -85,6 +90,7 @@ def require_attachment(
 def download_path(
     store: FileStore, book_id: int, bill_id: str, attachment_id: str
 ) -> tuple[Attachment, Path]:
+    """同时校验附件元数据和实际文件，返回安全下载路径。"""
     attachment = require_attachment(store, book_id, bill_id, attachment_id)
     path = store.attachment_path(book_id, attachment.relative_path)
     if not path.is_file():
@@ -94,6 +100,7 @@ def download_path(
 
 
 def delete_attachment(store: FileStore, book_id: int, bill_id: str, attachment_id: str) -> None:
+    """先更新账单元数据，再删除对应文件；锁定和结清账单不可操作。"""
     with store.book_lock(book_id):
         bill = bill_crud.require_bill(store, book_id, bill_id)
         if bill.status in {BillStatus.LOCKED, BillStatus.SETTLED}:

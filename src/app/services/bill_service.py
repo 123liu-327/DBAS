@@ -1,4 +1,4 @@
-"""Bill validation, computed shares, and lifecycle before settlement."""
+"""账单业务服务：校验跨资源规则、组织分摊并管理结算前的账单生命周期。"""
 
 from uuid import uuid4
 
@@ -28,6 +28,7 @@ from app.storage import FileStore
 
 
 def checked_bill(raw: dict) -> Bill:
+    """构造完整 Bill，并将 Pydantic 错误转换为统一业务错误。"""
     try:
         return Bill.model_validate(raw)
     except ValidationError as exc:
@@ -37,6 +38,7 @@ def checked_bill(raw: dict) -> Bill:
 
 
 def list_bills(store: FileStore, book_id: int, month: str | None = None) -> list[Bill]:
+    """读取账本内账单；提供月份时只保留该月有记账日期的账单。"""
     bills = bill_crud.list_bills(store, book_id)
     if month is not None:
         bills = [bill for bill in bills if bill.date and bill.date.strftime("%Y-%m") == month]
@@ -46,6 +48,7 @@ def list_bills(store: FileStore, book_id: int, month: str | None = None) -> list
 def list_page(
     store: FileStore, book_id: int, month: str | None, page: int, page_size: int,
 ) -> BillPage:
+    """分页构造账单摘要，避免列表接口返回完整分摊和入住详情。"""
     records = paginate(list_bills(store, book_id, month), page, page_size)
     stays = stay_map(store, book_id)
     items = [
@@ -67,6 +70,7 @@ def list_page(
 
 
 def posted_bills(store: FileStore, book_id: int, start: str, end: str) -> list[Bill]:
+    """取得月份闭区间内的 POSTED 账单，供报表和结算共用。"""
     return [
         bill for bill in list_bills(store, book_id)
         if bill.status == BillStatus.POSTED and bill.date is not None
@@ -75,12 +79,14 @@ def posted_bills(store: FileStore, book_id: int, start: str, end: str) -> list[B
 
 
 def detail(store: FileStore, book_id: int, bill_id: str) -> BillDetail:
+    """组合账单、垫付人、参与人的入住信息和即时分摊明细。"""
     bill = bill_crud.require_bill(store, book_id, bill_id)
     stays = stay_map(store, book_id)
     members = {
         member_id: member_crud.require_member(store, member_id) for member_id in stays
     }
     shares = []
+    # 草稿字段可能不完整，因此详情不尝试计算草稿分摊。
     if bill.status != BillStatus.DRAFT:
         shares = [
             BillShareItem(**share.model_dump(), member=members[share.member_id],
@@ -98,6 +104,7 @@ def detail(store: FileStore, book_id: int, bill_id: str) -> BillDetail:
 
 
 def preview(store: FileStore, book_id: int, data: BillFields) -> BillPreview:
+    """按正式账单规则计算预览，但不分配真实 ID，也不写入文件。"""
     require_book(store, book_id)
     bill = checked_bill({"id": "preview", "bookId": book_id, **data.model_dump(by_alias=True),
                          "status": "POSTED"})
@@ -121,14 +128,18 @@ def preview(store: FileStore, book_id: int, data: BillFields) -> BillPreview:
 
 
 def create_bill(store: FileStore, book_id: int, data: BillCreate) -> Bill:
+    """在账本锁内校验、试算并持久化账单。"""
+
     require_book(store, book_id)
     with store.book_lock(book_id):
+        # 加锁后再次确认账本存在，防止并发删除造成悬空账单。
         require_book(store, book_id)
         bill = checked_bill({"id": f"b_{uuid4().hex}", "bookId": book_id,
                              **data.model_dump(mode="json", by_alias=True)})
         stays = stay_map(store, book_id)
         validate_members(bill, stays)
         if bill.status == BillStatus.POSTED:
+            # 写入前先完整计算一次，保证不会保存无法分摊的正式账单。
             calculate_shares(bill, stays)
         bill_crud.insert_bill(store, bill)
         touch_book(store, book_id)
@@ -136,6 +147,8 @@ def create_bill(store: FileStore, book_id: int, data: BillCreate) -> Bill:
 
 
 def update_bill(store: FileStore, book_id: int, bill_id: str, data: BillPatch) -> Bill:
+    """合并局部修改，执行状态与分摊校验后原子替换原账单。"""
+
     require_book(store, book_id)
     with store.book_lock(book_id):
         original = bill_crud.require_bill(store, book_id, bill_id)
@@ -161,6 +174,7 @@ def update_bill(store: FileStore, book_id: int, bill_id: str, data: BillPatch) -
 
 
 def delete_bill(store: FileStore, book_id: int, bill_id: str) -> None:
+    """删除可修改账单及其附件文件，并更新账本活跃时间。"""
     require_book(store, book_id)
     with store.book_lock(book_id):
         bill = bill_crud.require_bill(store, book_id, bill_id)
@@ -173,6 +187,7 @@ def delete_bill(store: FileStore, book_id: int, bill_id: str) -> None:
 
 
 def monthly_shares(store: FileStore, book_id: int, month: str) -> MonthlyShares:
+    """即时汇总指定月份每位入住成员的分摊金额，排除草稿。"""
     stays = stay_map(store, book_id)
     totals = dict.fromkeys(stays, 0)
     for bill in list_bills(store, book_id, month):

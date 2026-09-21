@@ -1,4 +1,4 @@
-"""Six-month trends and CSV export derived from posted bills."""
+"""报表业务服务：使用已入账账单生成六个月趋势和 CSV 导出内容。"""
 
 import calendar
 import csv
@@ -19,12 +19,14 @@ CSV_HEADER = [
 
 
 def _shift_month(month: str, delta: int) -> str:
+    """在 YYYY-MM 基础上前后移动指定月数。"""
     year, number = map(int, month.split("-"))
     absolute = year * 12 + number - 1 + delta
     return f"{absolute // 12:04d}-{absolute % 12 + 1:02d}"
 
 
 def monthly_trend(store: FileStore, book_id: int, end_month: str | None) -> list[MonthlyTrend]:
+    """统计截至指定月份的连续六个月总额及在住成员人均金额。"""
     end_month = end_month or date.today().strftime("%Y-%m")
     stays = stay_map(store, book_id)
     totals = {_shift_month(end_month, offset): 0 for offset in range(-5, 1)}
@@ -36,6 +38,7 @@ def monthly_trend(store: FileStore, book_id: int, end_month: str | None) -> list
         start = date(year, number, 1)
         end = date(year, number, calendar.monthrange(year, number)[1])
         residents = sum(overlap_days(start, end, stay) > 0 for stay in stays.values())
+        # 使用整数运算四舍五入，避免浮点数造成分值误差。
         per_capita = (total * 2 + residents) // (2 * residents) if residents else 0
         result.append(MonthlyTrend(month=month, total_cents=total,
                                    per_capita_cents=per_capita))
@@ -43,6 +46,7 @@ def monthly_trend(store: FileStore, book_id: int, end_month: str | None) -> list
 
 
 def export_csv(store: FileStore, book_id: int, month: str) -> str:
+    """按账单和参与人展开指定月份的分摊结果，生成 CSV 文本。"""
     stays = stay_map(store, book_id)
     members = {
         member_id: member_crud.require_member(store, member_id) for member_id in stays
