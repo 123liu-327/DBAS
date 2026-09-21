@@ -27,10 +27,8 @@ def validate_members(bill: Bill, stays: Mapping[int, Stay]) -> None:
             "STAY_NOT_FOUND", "参与人或垫付人在此账本没有入住记录",
             status_code=422, field="participants",
         )
-##手写区域结束
 
 
-##以下为手写
 def calculate_shares(bill: Bill, stays: Mapping[int, Stay]) -> list[ShareDetail]:
     """调用纯算法计算分摊，并在服务边界保证金额守恒。"""
 

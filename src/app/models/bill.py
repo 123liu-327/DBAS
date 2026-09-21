@@ -18,10 +18,8 @@ class SplitMethod(StrEnum):
     EVEN = "EVEN"
     BY_DAYS = "BY_DAYS"
     BY_WEIGHT = "BY_WEIGHT"
-##手写区域结束
 
 
-##以下为手写
 class BillStatus(StrEnum):
     """账单业务状态，与 HTTP 状态码无关。
 
@@ -33,10 +31,8 @@ class BillStatus(StrEnum):
     POSTED = "POSTED"
     LOCKED = "LOCKED"
     SETTLED = "SETTLED"
-##手写区域结束
 
 
-##以下为手写
 class BillPeriod(CamelModel):
     """按天分摊的闭区间，开始和结束日期当天都计入有效天数。"""
 
@@ -48,10 +44,8 @@ class BillPeriod(CamelModel):
         if self.end < self.start:
             raise ValueError("分摊周期结束日期不能早于开始日期")
         return self
-##手写区域结束
 
 
-##以下为手写
 class Bill(StoredModel):
     """持久化账单模型。
 
