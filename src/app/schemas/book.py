@@ -51,7 +51,9 @@ class BookBillCounts(CamelModel):
     settled: int = Field(ge=0)
 
 
+# 以下为待手写区域：BookDetail（现有实现为参考，实际改写后再标记为手写）
 class BookDetail(CamelModel):
     book: BookItem
     stays: list[StayItem]
     bill_status_counts: BookBillCounts
+# 待手写区域结束：BookDetail

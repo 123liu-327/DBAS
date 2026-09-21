@@ -5,6 +5,7 @@ from functools import cache
 from app.models.settlement import Transfer
 
 
+# 以下为待手写区域：min_transfers（现有实现为参考，实际改写后再标记为手写）
 def min_transfers(balances: list[tuple[int, int]]) -> list[Transfer]:
     if len(balances) > 6 or sum(amount for _, amount in balances) != 0:
         raise ValueError("成员净余额之和必须为零，并且成员数不能超过六人")
@@ -41,3 +42,4 @@ def min_transfers(balances: list[tuple[int, int]]) -> list[Transfer]:
         Transfer(from_member_id=ids[source], to_member_id=ids[target], amount_cents=amount)
         for source, target, amount in solve(initial)
     ]
+# 待手写区域结束：min_transfers

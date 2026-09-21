@@ -46,14 +46,18 @@ def detail(store: FileStore, book_id: int) -> BookDetail:
     )
 
 
+# 以下为待手写区域：create_book（现有实现为参考，实际改写后再标记为手写）
 def create_book(store: FileStore, data: BookCreate) -> Book:
     """把已通过 Schema 校验的创建参数交给 CRUD 持久化。"""
     return book_crud.insert_book(store, name=data.name, description=data.description)
+# 待手写区域结束：create_book
 
 
+# 以下为待手写区域：update_book（现有实现为参考，实际改写后再标记为手写）
 def update_book(store: FileStore, book_id: int, data: BookPatch) -> Book:
     """仅更新请求明确提交的字段，并由模型刷新 updatedAt。"""
     return book_crud.update_book(
         store, book_id,
         lambda original: original.with_updates(**data.model_dump(exclude_unset=True)),
     )
+# 待手写区域结束：update_book

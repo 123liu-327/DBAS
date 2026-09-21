@@ -204,3 +204,30 @@ def test_locked_bill_blocks_share_changing_stay_edit(tmp_path: Path) -> None:
     assert response.status_code == 409
     assert response.json()["error"]["code"] == "STAY_LOCKED"
     assert client.get(f"/api/books/{book_id}/bills/{created['id']}").status_code == 200
+
+
+def test_month_filter_uses_booking_date_and_paginates_after_filter(tmp_path: Path) -> None:
+    """跨月周期按记账日期归属；无日期草稿仅出现在未筛选列表中。"""
+    client = TestClient(create_app(Settings(data_dir=tmp_path, seed_demo_books=False)))
+    book_id, ids = setup_book(client)
+    prefix = f"/api/books/{book_id}/bills"
+    for day in ("2026-03-31", "2026-04-01", "2026-04-02"):
+        response = client.post(prefix, json=bill_payload(ids, date=day))
+        assert response.status_code == 201
+    assert client.post(prefix, json={"status": "DRAFT"}).status_code == 201
+    assert client.get(prefix).json()["data"]["total"] == 4
+    march = client.get(prefix, params={"month": "2026-03"}).json()["data"]
+    assert march["total"] == 1
+    assert march["list"][0]["date"] == "2026-03-31"
+    april_ids = []
+    for page in (1, 2):
+        result = client.get(
+            prefix, params={"month": "2026-04", "page": page, "pageSize": 1}
+        ).json()["data"]
+        assert result["total"] == 2
+        assert result["hasMore"] == (page == 1)
+        assert len(result["list"]) == 1
+        assert result["list"][0]["date"].startswith("2026-04")
+        april_ids.append(result["list"][0]["id"])
+    assert len(set(april_ids)) == 2
+    assert client.get(prefix, params={"month": "2026-13"}).status_code == 422

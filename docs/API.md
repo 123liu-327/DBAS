@@ -80,3 +80,11 @@
 ```
 
 金额使用整数分。结算建议只读取 `POSTED` 账单，不产生付款或快照。F12 路由未开放。
+
+## 月份筛选与请求链路
+
+`GET /api/books/1/bills?month=2026-03&page=1&pageSize=10` 先按账本查询，再按记账日期 `date` 筛选，最后分页。`total` 是筛选后的总数。`period` 只用于按天分摊；跨月周期不会拆分账单的月份归属。未填写日期的草稿仅出现在未筛选列表；有日期草稿可列出，但不参与统计或结算。
+
+创建与修改返回 `ApiResponse[Bill]`；列表返回 `ApiResponse[BillPage]`；详情返回 `ApiResponse[BillDetail]`；预览返回 `ApiResponse[BillPreview]`。分摊明细通过最新 Stay 即时计算。
+
+请求依次经过 Schema 类型校验、Service 跨资源校验、Bill 完整性校验、分摊服务与算法、CRUD 和 FileStore。服务通过响应 Schema 组合数据，路由包装 code/message/data；异常处理器返回中文错误。删除保持空的 204。
